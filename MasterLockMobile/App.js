@@ -13,8 +13,8 @@ const FETCH_TIMEOUT = 500;
 let didTimeOut = false;
 
 //define GET requests
-const myUnlockRequest = new Request("http://masterlock-calgarydemo2.mybluemix.net/request?payload=unlock&topic=");
-const myLockRequest = new Request("http://masterlock-calgarydemo2.mybluemix.net/request?payload=lock&topic=");
+const myUnlockRequest = new Request("http://consiliummasterlockdemo.mybluemix.net/request?payload=unlock&topic=");
+const myLockRequest = new Request("http://consiliummasterlockdemo.mybluemix.net/request?payload=lock&topic=");
 
 function cacheImages(images) {
   return images.map(image => {
