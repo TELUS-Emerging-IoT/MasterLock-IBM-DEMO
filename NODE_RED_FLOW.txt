@@ -156,7 +156,7 @@
         "type": "function",
         "z": "508752e6.16631c",
         "name": "Insert Data",
-        "func": "var date = new Date();\nmsg.date = date;\nreturn msg;",
+        "func": "var date = new Date();\nmsg.payload.date = date;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "x": 290,
