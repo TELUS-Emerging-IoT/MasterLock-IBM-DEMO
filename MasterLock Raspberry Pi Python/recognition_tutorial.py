@@ -95,8 +95,10 @@ def recognize():
 	while noFace:
 	    toc = timeit.default_timer()
 	    ret, frame = video_capture.read()
-	
-	    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	    
+	    if frame != None:
+	    	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	    else: return -1
 
 	    faces = faceCascade.detectMultiScale(
 	        gray,
