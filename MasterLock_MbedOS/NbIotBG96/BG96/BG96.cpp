@@ -250,7 +250,7 @@ bool BG96::connect(const char *apn, const char *username, const char *password)
 							{
 								pc.printf("ERROR --->>> PDP not valid, reset!!!\r\n");
 								pc.printf("***********************************************\r\n");
-								connect(apn, username, password);
+								reset();
 							}
 						break;
 					}
