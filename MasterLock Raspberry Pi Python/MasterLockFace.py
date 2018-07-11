@@ -16,9 +16,10 @@ if __name__ == "__main__":
 	nucleoSerial.flushInput()
 	while True:
 		if (nucleoSerial.inWaiting() > 0):
+                        print("debug: ")
 			command = nucleoSerial.readline()
 			print(command)
-			if (command == 'c'):
+			if (command == 'c' or command == "c"):
 				print("Face detected, beginning recognition...")
 				if (recognize() == "s1"): 
 					nucleoSerial.write(b'o')
@@ -26,4 +27,5 @@ if __name__ == "__main__":
 				else:
 					nucleoSerial.write(b'x')
 					print("Unauthorized or unsafe user, access denied.")
-				nucleoSerial.flushInput()
+                                nucleoSerial.flushInput()
+                        else: nucleoSerial.write(b'u')

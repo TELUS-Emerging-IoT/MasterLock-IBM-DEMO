@@ -20,11 +20,11 @@
 //device id settings
 #define ID_ON_FLASH		0
 
-#if ID_ON_FLASH	
+#if ID_ON_FLASH
 const uint8_t DEVICE_ID[6] = {0x00,0x80,0xe1,0xb7,0xd3,0x47};
 #endif
 
-//debug messages enable 
+//debug messages enable
 #define DBG_MSG				0
 
 #define BG96_CONNECT_TIMEOUT    15000
@@ -33,7 +33,7 @@ const uint8_t DEVICE_ID[6] = {0x00,0x80,0xe1,0xb7,0xd3,0x47};
 #define BG96_MISC_TIMEOUT       1000
 #define BG96_SOCKQ_TIMEOUT      8000
 
-extern  Serial pc;			//(SERIAL_TX, SERIAL_RX); 
+extern  Serial pc;			//(SERIAL_TX, SERIAL_RX);
 
 Timer main_timer;
 
@@ -62,7 +62,7 @@ static void delay_ms(uint32_t del)
 	do{
 			wait_ms(1);
 	}while (del--);
-	
+
 }
 
 bool BG96::startup(int mode)
@@ -72,7 +72,7 @@ bool BG96::startup(int mode)
     _parser.setTimeout(BG96_MISC_TIMEOUT);
     /*Test module before reset*/
     waitBG96Ready();
-    
+
     wait(1.0);
     _parser.send("ATE0");
     while (1) {
@@ -80,7 +80,7 @@ bool BG96::startup(int mode)
             //printf("ATE ok\r\n");
             break;
             }
-    }	
+    }
 
     pc.printf("waiting for network...\r\n");
 		//wait for 10 seconds to connect provider network
@@ -96,9 +96,9 @@ bool BG96::startup(int mode)
 			wait_ms(100);
 			wloop++;
 		}
-	  
+
 		myled=0;
-		//only to see cops data ... no matching or check 
+		//only to see cops data ... no matching or check
 		_parser.send("AT+COPS?");
     while (1) {
         if (_parser.recv("OK"))
@@ -107,7 +107,7 @@ bool BG96::startup(int mode)
           }
     }
 
-	#if 0	
+	#if 0
     _parser.send("AT+QIACT?");
     while (1) {
         if (_parser.recv("OK"))
@@ -125,9 +125,9 @@ bool BG96::hw_reset(void)
 	  BG96_reset = 0;
 	  BG96_PWRKEY = 0;
 	  VBAT_3V8_EN = 0;
-		
+
 		delay_ms(200);
-	
+
 	  pc.printf("HW reset BG96\r\n");
 
     BG96_reset = 1;
@@ -137,7 +137,7 @@ bool BG96::hw_reset(void)
 //    BG96_W_DISABLE = 0;
 
     BG96_PWRKEY = 1;
-	
+
 		delay_ms(300);
 
     BG96_reset = 0;
@@ -159,11 +159,11 @@ void BG96::waitBG96Ready(void)
     reset();
     pc.printf("Wait for ready...");
 
-		//after HW reset,if no RDY from BG96 program stops 
+		//after HW reset,if no RDY from BG96 program stops
 		//green led lamps 0.5 seconds
-    while(1) 
+    while(1)
 		{
-        if (_parser.recv("RDY")) 
+        if (_parser.recv("RDY"))
 				{
 						pc.printf("BG96 ready\r\n");
 						myled = 0;
@@ -187,13 +187,13 @@ bool BG96::connect(const char *apn, const char *username, const char *password)
 
 	    Timer timer_s;
 		uint32_t time;
-	
+
 		int pdp_retry = 0;
-	
+
 		memset(pdp_string, 0, sizeof(pdp_string));
 		pc.printf("Checking APN ...\r\n");
 		_parser.send("AT+QICSGP=1");
-		
+
 	    while(1){
 						//read and store answer
 						_parser.read(&pdp_string[i], 1);
@@ -206,7 +206,7 @@ bool BG96::connect(const char *apn, const char *username, const char *password)
 						}
 						//TODO: add timeout if no aswer from module!!
     }
-		
+
 		//compare APN name, if match, no store is needed
 		search_pt = strstr(pdp_string, apn);
 		if (search_pt == 0)
@@ -217,13 +217,13 @@ bool BG96::connect(const char *apn, const char *username, const char *password)
 			//program APN and connection parameter only for PDP context 1, authentication NONE
 			//TODO: add program for other context
 			if (!(_parser.send("AT+QICSGP=1,1,\"%s\",\"%s\",\"%s\",0", &apn[0], &username[0], &password[0])
-            && _parser.recv("OK"))) 
+            && _parser.recv("OK")))
 					{
 						return false;
 					}
 		}
 		pc.printf("End APN check\r\n\n");
-		
+
 		//activate PDP context 1 ...
 		pc.printf("PDP activating ...\r\n");
 		int a = 1;
@@ -233,28 +233,28 @@ bool BG96::connect(const char *apn, const char *username, const char *password)
 				timer_s.reset();
 				timer_s.start();
 				while (1)
-				{			
+				{
 					if (_parser.recv("OK")){
 						a=0;
 						break;
 					}
-						
+
 					time = timer_s.read_ms();
 					uint32_t end_time = (BG96_MISC_TIMEOUT*(5+(pdp_retry*3)));
-					if (time > end_time) 
+					if (time > end_time)
 					{
 						pdp_retry++;
 						pc.printf("PDP not connecting... retrying... \r\n");
-						
+
 						if (pdp_retry > 3)
 							{
 								pc.printf("ERROR --->>> PDP not valid, reset!!!\r\n");
 								pc.printf("***********************************************\r\n");
-								reset();
+								starup(0);
 							}
 						break;
 					}
-				}		
+				}
 		}
 		pc.printf("PDP started\r\n\n");
     return true;
@@ -279,7 +279,7 @@ const char *BG96::getIPAddress(void)
     uint8_t n1, n2, n3, n4;
 
     if (!(_parser.send("AT+QIACT?")
-						//NOTE the %s on parser.read function returns only the first character of string ... 
+						//NOTE the %s on parser.read function returns only the first character of string ...
 						//TODO verify parser.read  function
 						//here used only to check if commands is well processed by BG96
             && _parser.recv("+QIACT: %s", &act_string[0])
@@ -302,7 +302,7 @@ const char *BG96::getIPAddress(void)
 const char *BG96::getMACAddress(void)
 {
     uint32_t n1, n2, n3, n4, n5, n6;
-	
+
   #if ID_ON_FLASH
     n1=DEVICE_ID[0];		//0x00;
     n2=DEVICE_ID[1];		//0x0b;
@@ -370,20 +370,20 @@ bool BG96::open(const char *type, int* id, const char* addr, int port)
 
 		//open socket for context 1
     while(1) {
-			
-        if((_parser.send("AT+QIOPEN=1,%d,\"%s\",\"%s\",%d,0,0\r", sock_id, send_type_pt, addr, port)) 
+
+        if((_parser.send("AT+QIOPEN=1,%d,\"%s\",\"%s\",%d,0,0\r", sock_id, send_type_pt, addr, port))
 					&& (_parser.recv("OK")))
 
         {
 
-            while(1) 
+            while(1)
 						{
                 res = _parser.recv("+QIOPEN: %d,%d", id, &result);
-                if (res == true) 
+                if (res == true)
 									{
                     pc.printf("Open socket type %s #%d result = %d\r\n", send_type_pt, *id, result);
                     if (result == 0)
-										{	
+										{
 												//wait for socket open result ... start RECV timeout timer
 												socket_opening = true;
 												main_timer.reset();
@@ -393,7 +393,7 @@ bool BG96::open(const char *type, int* id, const char* addr, int port)
 										else
 										{
 										int s_id = *id;
-                    //if (result == 563) 
+                    //if (result == 563)
                     close(s_id);
                     return false;
 										}
@@ -424,7 +424,7 @@ bool BG96::send(int id, const void *data, uint32_t amount)
     _parser.setTimeout(BG96_SEND_TIMEOUT);
 
 		//pclog.printf("Sending %d len ...", amount);
-	
+
 		//check if previous sent is good, otherwise after 5 consecutive fails close socket and error!!
 		if (err_counter > 5)
 		{
@@ -433,8 +433,8 @@ bool BG96::send(int id, const void *data, uint32_t amount)
 				socket_closed = 1;
 				err_counter = 0;
 				return false;
-		}		
-	
+		}
+
 		#if DBG_MSG
 
 
@@ -445,9 +445,9 @@ bool BG96::send(int id, const void *data, uint32_t amount)
 			if ((dt[0] == 0xc0) && (dt[1] == 0x00))
 				pc.printf("\r\n\nPING ");
 		}
-		
+
 		_parser.send("AT+COPS?");
-    while (1) 
+    while (1)
 		{
         if (_parser.recv("OK")){
             break;
@@ -462,13 +462,13 @@ bool BG96::send(int id, const void *data, uint32_t amount)
 				while(1)
 				{
 					if( _parser.recv("+QISEND: %s", &result_string[0])
-            && _parser.recv("OK")) 
+            && _parser.recv("OK"))
 						{
 							break;
-						}	
+						}
 				}
 		#else
-			
+
 		int i = 0;
 		memset(result_string, 0, sizeof(result_string));
 		const char OK_str[] = {"OK\r\n"};
@@ -485,9 +485,9 @@ bool BG96::send(int id, const void *data, uint32_t amount)
 						}
 						//TODO: add timeout if no aswer from module!!
     }
-		
-		//if send fails, the string doesn't have ",0" sequence, then 
-		search_pt = strstr(result_string, OK0_str);		
+
+		//if send fails, the string doesn't have ",0" sequence, then
+		search_pt = strstr(result_string, OK0_str);
 		if (search_pt == 0)
 		{
 				err_counter++;
@@ -496,10 +496,10 @@ bool BG96::send(int id, const void *data, uint32_t amount)
 		{
 				err_counter = 0;
 		}
-		
+
 		#endif
 
-		
+
 		//here send data to socket ...
     sprintf((char*)_buf,"AT+QISEND=%d,%d\r", id, amount);
 
@@ -508,7 +508,7 @@ bool BG96::send(int id, const void *data, uint32_t amount)
         if (_parser.write((char*)_buf, strlen(_buf)) >=0) {
             if (_parser.recv("> ")) {
                 if ((_parser.write((char*)data, (int)amount) >= 0)
-                        && (_parser.recv("SEND OK"))) 
+                        && (_parser.recv("SEND OK")))
 									{
 										#if DBG_MSG
 										//print for debug
@@ -522,7 +522,7 @@ bool BG96::send(int id, const void *data, uint32_t amount)
         pc.printf("Send retry #%d\r\n", (i+1));
         wait_ms(2000);
     }
-		
+
 		//FAIL to send data to socket, after 3 retry!!
 		#if DBG_MSG
 		//these test and print only for debug
@@ -539,7 +539,7 @@ bool BG96::send(int id, const void *data, uint32_t amount)
             }
     }
 		#endif
-		
+
 	  pc.printf("Closing socket #%d\r\n", id);
 		close(id);
 		socket_closed = 1;
@@ -567,7 +567,7 @@ int32_t BG96::recv(int id, void *data, uint32_t amount)
 				//return pending data...
         return amount;
     }
-		
+
     local_amount = 0;
     local_pt = 0;
 
@@ -589,7 +589,7 @@ int32_t BG96::recv(int id, void *data, uint32_t amount)
 					 return -3;
 				}
 		}
-		
+
     /*
     int par_timeout = _parser.getTimeout();
     _parser.setTimeout(0);
@@ -614,12 +614,12 @@ int32_t BG96::recv(int id, void *data, uint32_t amount)
 
         _parser.read((char*)data, recv_amount);
         while( _parser.recv("OK"));
-				
+
 			  #if DBG_MSG
 				if ((recv_amount == 2) && (dt[0] == 0xd0) && (dt[1] == 0x00))
 					pc.printf("PING Recv!\r\n");
 				#endif
-							
+
 				//if data amount received more than expected, store it for next call of recv function
         if(recv_amount > amount) {
             local_amount = recv_amount-amount;
@@ -692,4 +692,3 @@ bool BG96::writeable()
 {
     return _serial.writeable();
 }
-
