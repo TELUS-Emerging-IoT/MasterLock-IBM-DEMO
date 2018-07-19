@@ -1,181 +1,23 @@
 [
     {
-        "id": "c6deee98.6eb83",
-        "type": "ibmiot out",
-        "z": "508752e6.16631c",
-        "authentication": "boundService",
-        "apiKey": "cd9ca4f3.d94ac8",
-        "outputType": "cmd",
-        "deviceId": "000B458900B8",
-        "deviceType": "Telus-Avnet-LTE-M1-Nucleo-STM32-MCU",
-        "eventCommandType": "cmd",
-        "format": "String",
-        "data": "command",
-        "qos": "1",
-        "name": "MasterLock",
-        "service": "registered",
-        "x": 450,
-        "y": 80,
-        "wires": []
-    },
-    {
-        "id": "6278ab05.074714",
+        "id": "a5b29274.c10c8",
         "type": "inject",
-        "z": "508752e6.16631c",
-        "name": "Unlock",
+        "z": "deb0d57.1c46528",
+        "name": "",
         "topic": "",
-        "payload": "unlock",
+        "payload": "locknow",
         "payloadType": "str",
         "repeat": "",
         "crontab": "",
         "once": false,
-        "onceDelay": 0.1,
-        "x": 90,
+        "onceDelay": "5",
+        "x": 120,
         "y": 60,
         "wires": [
             [
-                "c6deee98.6eb83",
-                "3103263e.08fa2a",
-                "c26639f0.088ab8"
+                "47b2f57.ca0fc0c",
+                "c995e54c.527b28"
             ]
         ]
-    },
-    {
-        "id": "f3e1da4.a9d8c28",
-        "type": "inject",
-        "z": "508752e6.16631c",
-        "name": "Lock",
-        "topic": "",
-        "payload": "lock",
-        "payloadType": "str",
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "x": 90,
-        "y": 100,
-        "wires": [
-            [
-                "c6deee98.6eb83",
-                "3103263e.08fa2a",
-                "c26639f0.088ab8"
-            ]
-        ]
-    },
-    {
-        "id": "3103263e.08fa2a",
-        "type": "debug",
-        "z": "508752e6.16631c",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "x": 450,
-        "y": 20,
-        "wires": []
-    },
-    {
-        "id": "7b17e628.b6f448",
-        "type": "http in",
-        "z": "508752e6.16631c",
-        "name": "HTTP IN",
-        "url": "/request",
-        "method": "get",
-        "upload": false,
-        "swaggerDoc": "",
-        "x": 80,
-        "y": 140,
-        "wires": [
-            [
-                "fee6f9ea.43d568",
-                "eb7fa85f.d782f8",
-                "c26639f0.088ab8"
-            ]
-        ]
-    },
-    {
-        "id": "976d3ef4.b8471",
-        "type": "debug",
-        "z": "508752e6.16631c",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "x": 450,
-        "y": 140,
-        "wires": []
-    },
-    {
-        "id": "fee6f9ea.43d568",
-        "type": "function",
-        "z": "508752e6.16631c",
-        "name": "ΔPayload",
-        "func": "msg.payload = msg.payload.payload;\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 280,
-        "y": 120,
-        "wires": [
-            [
-                "c6deee98.6eb83",
-                "976d3ef4.b8471"
-            ]
-        ]
-    },
-    {
-        "id": "eb7fa85f.d782f8",
-        "type": "http response",
-        "z": "508752e6.16631c",
-        "name": "HTTP OK",
-        "statusCode": "200",
-        "headers": {},
-        "x": 280,
-        "y": 160,
-        "wires": []
-    },
-    {
-        "id": "98052595.d913a8",
-        "type": "cloudant out",
-        "z": "508752e6.16631c",
-        "name": "Database",
-        "cloudant": "",
-        "database": "lock-unlock-history",
-        "service": "MasterLock-CalgaryDemo2-cloudantNoSQLDB",
-        "payonly": false,
-        "operation": "insert",
-        "x": 460,
-        "y": 200,
-        "wires": []
-    },
-    {
-        "id": "c26639f0.088ab8",
-        "type": "function",
-        "z": "508752e6.16631c",
-        "name": "Insert Data",
-        "func": "var date = new Date();\nmsg.payload.date = date;\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 290,
-        "y": 200,
-        "wires": [
-            [
-                "98052595.d913a8"
-            ]
-        ]
-    },
-    {
-        "id": "cd9ca4f3.d94ac8",
-        "type": "ibmiot",
-        "z": "",
-        "name": "MasterLock",
-        "keepalive": "3000",
-        "serverName": "wkfedz.internetofthings.ibmcloud.com",
-        "cleansession": true,
-        "appId": "",
-        "shared": false
     }
 ]

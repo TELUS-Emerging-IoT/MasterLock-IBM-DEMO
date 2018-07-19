@@ -76,7 +76,7 @@ bool connected = false;
 int retryAttempt = 0;
 char subscription_url[MQTT_MAX_PAYLOAD_SIZE];
 char subbed_msg[MQTT_MAX_PAYLOAD_SIZE];
-#define FW_REV				"1.0a"
+#define FW_REV                "1.0a"
 
 MQTT::Message message;
 MQTTString TopicName={TOPIC};
@@ -100,12 +100,12 @@ int connect(MQTT::Client<MQTT_GSM, Countdown, MQTT_MAX_PACKET_SIZE>* client, MQT
     const char* iot_ibm = BROKER_URL;
     char hostname[strlen(org) + strlen(iot_ibm) + 1];
     sprintf(hostname, "%s%s", org, iot_ibm);
-
+    
     // Construct clientId - d:org:type:id
     char clientId[strlen(org) + strlen(type) + strlen(id) + 5];
     sprintf(clientId, "d:%s:%s:%s", org, type, id);  //@@
     sprintf(subscription_url, "%s.%s/#/device/%s/sensor/", org, "internetofthings.ibmcloud.com",id);
-
+    
     netConnecting = true;
     ipstack->open(&ipstack->getGSM());
     int rc = ipstack->connect(hostname, IBM_IOT_PORT, connectTimeout);
@@ -117,24 +117,24 @@ int connect(MQTT::Client<MQTT_GSM, Countdown, MQTT_MAX_PACKET_SIZE>* client, MQT
     pc.printf ("--->TCP Connected\n\r");
     netConnected = true;
     netConnecting = false;
-
+    
     // MQTT Connect
     mqttConnecting = true;
     MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
     data.MQTTVersion = 3;
     data.struct_version=0;
     data.clientID.cstring = clientId;
-
- 	data.username.cstring = "use-token-auth";
+    
+    data.username.cstring = "use-token-auth";
     data.password.cstring = auth_token;
-
+    
     if ((rc = client->connect(data)) == 0)
     {
         connected = true;
         pc.printf ("--->MQTT Connected\n\r");
-	#ifdef SUBSCRIBE
+#ifdef SUBSCRIBE
         if (!subscribe(client, ipstack)) printf ("--->>>MQTT subscribed to: %s\n\r",TOPIC);
-	#endif
+#endif
     }
     else {
         //WARN("MQTT connect returned %d\n", rc);
@@ -147,14 +147,14 @@ int connect(MQTT::Client<MQTT_GSM, Countdown, MQTT_MAX_PACKET_SIZE>* client, MQT
 
 int getConnTimeout(int attemptNumber)
 {  // First 10 attempts try within 3 seconds, next 10 attempts retry after every 1 minute
-   // after 20 attempts, retry every 10 minutes
+    // after 20 attempts, retry every 10 minutes
     return (attemptNumber < 10) ? 3 : (attemptNumber < 20) ? 60 : 600;
 }
 
 void attemptConnect(MQTT::Client<MQTT_GSM, Countdown, MQTT_MAX_PACKET_SIZE>* client, MQTT_GSM* ipstack)
 {
     connected = false;
-
+    
     while (connect(client, ipstack) != MQTT_CONNECTION_ACCEPTED)
     {
         if (connack_rc == MQTT_NOT_AUTHORIZED || connack_rc == MQTT_BAD_USERNAME_OR_PASSWORD) {
@@ -163,14 +163,14 @@ void attemptConnect(MQTT::Client<MQTT_GSM, Countdown, MQTT_MAX_PACKET_SIZE>* cli
         }
         int timeout = getConnTimeout(++retryAttempt);
         //WARN("Retry attempt number %d waiting %d\n", retryAttempt, timeout);
-
+        
         // if ipstack and client were on the heap we could deconstruct and goto a label where they are constructed
         //  or maybe just add the proper members to do this disconnect and call attemptConnect(...)
         // this works - reset the system when the retry count gets to a threshold
         if (retryAttempt == 5){
-						pc.printf ("\n\n\rFAIL!! system reset!!\n\n\r");
+            pc.printf ("\n\n\rFAIL!! system reset!!\n\n\r");
             NVIC_SystemReset();
-				}
+        }
         else
             wait(timeout);
     }
@@ -179,24 +179,24 @@ void attemptConnect(MQTT::Client<MQTT_GSM, Countdown, MQTT_MAX_PACKET_SIZE>* cli
 //HELPER FUNCTION OF LED SWITCHING
 void writeLED(int number)
 {
-	if (number == 0)
-	{
-		redLED = 1;
-		yellowLED = 0;
-		greenLED = 0;
-	}
-	else if (number == 1)
-	{
-		redLED = 0;
-		yellowLED = 1;
-		greenLED = 0;
-	}
-	else if (number == 2)
-	{
-		redLED = 0;
-		yellowLED = 0;
-		greenLED = 1;
-	}
+    if (number == 0)
+    {
+        redLED = 1;
+        yellowLED = 0;
+        greenLED = 0;
+    }
+    else if (number == 1)
+    {
+        redLED = 0;
+        yellowLED = 1;
+        greenLED = 0;
+    }
+    else if (number == 2)
+    {
+        redLED = 0;
+        yellowLED = 0;
+        greenLED = 1;
+    }
 }
 
 //MAIN function
@@ -208,98 +208,109 @@ int main()
 {
     const char * apn = APN; // Network must be visible otherwise it can't connect
     const char * username = USNAME;
-	const char * password = PASSW;
+    const char * password = PASSW;
     BG96Interface bg96_if(D8, D2, false);
-
-	//change serial baud to 9600
-	pc.baud(9600);
-	wait(0.1);
-
-	pc.printf("\r\n*************************************************\r\n");
-	wait( 0.1 );
-	pc.printf("TELUS LTE-M IoT Starter Kit: Lock Demo");
+    
+    //change serial baud to 9600
+    pc.baud(9600);
+    wait(0.1);
+    
+    pc.printf("\r\n*************************************************\r\n");
+    wait( 0.1 );
+    pc.printf("TELUS LTE-M IoT Starter Kit: Lock Demo");
     wait( 0.1 );
     pc.printf("MBED online version %s\r\n", FW_REV);
     wait( 0.1 );
-	pc.printf("APN  = %s\r\n", APN);
-
-   MQTT_GSM ipstack(bg96_if, apn, username, password);
-   MQTT::Client<MQTT_GSM, Countdown, MQTT_MAX_PACKET_SIZE> client(ipstack);
-
-   attemptConnect(&client, &ipstack);
-
-   if (connack_rc == MQTT_NOT_AUTHORIZED || connack_rc == MQTT_BAD_USERNAME_OR_PASSWORD)
-   {
-      while (true) wait(1.0); // Permanent failures - don't retry
-   }
-
-	sprintf(sensor_id,"%s",bg96_if.get_mac_address());
-
-	writeLED(0);
-
+    pc.printf("APN  = %s\r\n", APN);
+    
+    MQTT_GSM ipstack(bg96_if, apn, username, password);
+    MQTT::Client<MQTT_GSM, Countdown, MQTT_MAX_PACKET_SIZE> client(ipstack);
+    
+    attemptConnect(&client, &ipstack);
+    
+    if (connack_rc == MQTT_NOT_AUTHORIZED || connack_rc == MQTT_BAD_USERNAME_OR_PASSWORD)
+    {
+        while (true) wait(1.0); // Permanent failures - don't retry
+    }
+    
+    sprintf(sensor_id,"%s",bg96_if.get_mac_address());
+    
+    writeLED(0);
+    
     while (true)
     {
-		if (strcmp(subbed_msg, "unlock") == 0)
-		{
-			subbed_msg[0] = 0;
-			isAvailable = true;
-			pc.printf("available for unlocking \r\n");
-			writeLED(1);
-            wait(1);
-		}
-		else if (strcmp(subbed_msg, "lock") == 0)
-		{
-			subbed_msg[0] = 0;
-			isAvailable = false;
-			lockPin1_1 = 1;
+        if (strcmp(subbed_msg, "unlock") == 0)
+        {
+            subbed_msg[0] = 0;
+            isAvailable = true;
+            pc.printf("available for unlocking \r\n");
+            writeLED(1);
+            wait(2);
+        }
+        else if (strcmp(subbed_msg, "lock") == 0)
+        {
+            subbed_msg[0] = 0;
+            isAvailable = false;
+            lockPin1_1 = 1;
             lockPin1_2 = 0;
             writeLED(0);
-            wait(1.5);
-		}
-		else if (strcmp(subbed_msg, "unlocknow") == 0)
-		{
-			subbed_msg[0] = 0;
-			lockPin1_1 = 0;
+            wait(2);
+            lockPin1_1 = 1;
             lockPin1_2 = 1;
-            writeLED(2);
-            wait(1.5);
-		}
-		else if (strcmp(subbed_msg, "locknow") == 0)
-		{
-			subbed_msg[0] = 0;
-			lockPin1_1 = 1;
-            lockPin1_2 = 0;
+        }
+        else if (strcmp(subbed_msg, "locknow") == 0)
+        {
+            subbed_msg[0] = 0;
+            lockPin1_1 = 0;
+            lockPin1_2 = 10;
             writeLED(0);
             pc.printf("locked \r\n");
+            wait(2);
+            lockPin1_1 = 1;
+            lockPin1_2 = 1;
+        }
+        else if (strcmp(subbed_msg, "unlocknow") == 0)
+        {
+            subbed_msg[0] = 0;
+            lockPin1_1 = 10;
+            lockPin1_2 = 0;
+            writeLED(2);
+            pc.printf("unlocked \r\n");
             isLocked = 1;
+            wait(2);
+            lockPin1_1 = 1;
+            lockPin1_2 = 1;
+        }
+        
+        if (motionSensor.read() == 1 && isAvailable)
+        {
+            pc.printf("unlocking \r\n");
+            pc.printf("c");
             wait(1);
-		}
-
-		if (motionSensor.read() == 1 && isAvailable)
-		{
-			pc.printf("unlocking \r\n");
-			pc.printf("c");
-			wait(1);
-			char c = pc.getc();
-			if (c == 'o')
-			{
-				lockPin1_1 = 0;
-            	lockPin1_2 = 1;
-            	writeLED(2);
-            	pc.printf("unlocked \r\n");
-            	isLocked = 0;
-            	wait(7.5);
-            	lockPin1_1 = 1;
-            	lockPin1_2 = 0;
-            	wait(1.5);
-            	writeLED(1);
-            	pc.printf("locked \r\n");
-            	isLocked = 1;
+            char c = pc.getc();
+            if (c == 'o')
+            {
+                lockPin1_1 = 0;
+                lockPin1_2 = 1;
+                writeLED(2);
+                pc.printf("unlocked \r\n");
+                isLocked = 0;
+                wait(2);
+                lockPin1_1 = 1;
+                lockPin1_2 = 1;
+                wait(6.5);
+                lockPin1_1 = 1;
+                lockPin1_2 = 0;
+                wait(2);
+                writeLED(1);
+                pc.printf("locked \r\n");
+                isLocked = 1;
             }
-		}
-
-		lockPin1_1 = 0;
-		lockPin1_2 = 0;
-		client.yield(500);
+        }
+        
+        lockPin1_1 = 1;
+        lockPin1_2 = 1;
+        client.yield(500);
     }
 }
+
