@@ -1,5 +1,193 @@
 [
     {
+        "id": "47b2f57.ca0fc0c",
+        "type": "ibmiot out",
+        "z": "deb0d57.1c46528",
+        "authentication": "boundService",
+        "apiKey": "34a70a79.c909f6",
+        "outputType": "cmd",
+        "deviceId": "ConsiliumDemoUnit",
+        "deviceType": "TELUS-IOT-Starter-Kit",
+        "eventCommandType": "cmd",
+        "format": "String",
+        "data": "command",
+        "qos": "0",
+        "name": "MasterLock",
+        "service": "registered",
+        "x": 490,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "e17e85e3.0c9b88",
+        "type": "inject",
+        "z": "deb0d57.1c46528",
+        "name": "Unlock",
+        "topic": "",
+        "payload": "unlock",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "47b2f57.ca0fc0c",
+                "c995e54c.527b28",
+                "a172e30d.1779e"
+            ]
+        ]
+    },
+    {
+        "id": "f25549de.5e16e8",
+        "type": "inject",
+        "z": "deb0d57.1c46528",
+        "name": "Lock",
+        "topic": "",
+        "payload": "lock",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 130,
+        "y": 140,
+        "wires": [
+            [
+                "47b2f57.ca0fc0c",
+                "c995e54c.527b28",
+                "a172e30d.1779e"
+            ]
+        ]
+    },
+    {
+        "id": "c995e54c.527b28",
+        "type": "debug",
+        "z": "deb0d57.1c46528",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "x": 490,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "6bad76aa.0119d8",
+        "type": "http in",
+        "z": "deb0d57.1c46528",
+        "name": "HTTP IN",
+        "url": "/request",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 120,
+        "y": 180,
+        "wires": [
+            [
+                "4f901e4e.3d761",
+                "34673203.c689de"
+            ]
+        ]
+    },
+    {
+        "id": "164d975a.01c1b9",
+        "type": "debug",
+        "z": "deb0d57.1c46528",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 470,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "4f901e4e.3d761",
+        "type": "function",
+        "z": "deb0d57.1c46528",
+        "name": "ΔPayload",
+        "func": "msg.payload = msg.payload.payload;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 320,
+        "y": 180,
+        "wires": [
+            [
+                "47b2f57.ca0fc0c",
+                "164d975a.01c1b9"
+            ]
+        ]
+    },
+    {
+        "id": "34673203.c689de",
+        "type": "http response",
+        "z": "deb0d57.1c46528",
+        "name": "HTTP OK",
+        "statusCode": "200",
+        "headers": {},
+        "x": 320,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "21bc6e6f.fc69c2",
+        "type": "cloudant out",
+        "z": "deb0d57.1c46528",
+        "name": "Database",
+        "cloudant": "",
+        "database": "lockunlock",
+        "service": "ConsiliumMasterLockDEMO-cloudantNoSQLDB",
+        "payonly": false,
+        "operation": "insert",
+        "x": 500,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "a172e30d.1779e",
+        "type": "function",
+        "z": "deb0d57.1c46528",
+        "name": "Insert Data",
+        "func": "var date = new Date();\nmsg.date = date;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 330,
+        "y": 240,
+        "wires": [
+            [
+                "21bc6e6f.fc69c2"
+            ]
+        ]
+    },
+    {
+        "id": "17dd2caf.1f1453",
+        "type": "inject",
+        "z": "deb0d57.1c46528",
+        "name": "",
+        "topic": "",
+        "payload": "unlocknow",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "10",
+        "x": 120,
+        "y": 20,
+        "wires": [
+            [
+                "47b2f57.ca0fc0c",
+                "c995e54c.527b28"
+            ]
+        ]
+    },
+    {
         "id": "a5b29274.c10c8",
         "type": "inject",
         "z": "deb0d57.1c46528",
@@ -19,5 +207,16 @@
                 "c995e54c.527b28"
             ]
         ]
+    },
+    {
+        "id": "34a70a79.c909f6",
+        "type": "ibmiot",
+        "z": "",
+        "name": "MasterLock",
+        "keepalive": "3000",
+        "serverName": "wkfedz.internetofthings.ibmcloud.com",
+        "cleansession": true,
+        "appId": "",
+        "shared": false
     }
 ]
